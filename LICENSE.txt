@@ -1,0 +1,14 @@
+PROPRIETARY LICENSE — Sign To Text Clone
+Copyright (c) 2026. All rights reserved.
+
+This software, including its source code, UI design, gesture-classification
+logic, avatar character ("Sign-chan"), and documentation, is the exclusive
+property of the owner.
+
+You may NOT copy, modify, merge, publish, distribute, sublicense, or sell
+this software without prior written permission from the owner.
+
+This software is provided "AS IS", without warranty of any kind.
+
+Third-party libraries used (Three.js, MediaPipe Tasks Vision) remain under
+their own respective licenses (MIT / Apache-2.0) and are loaded from CDN.

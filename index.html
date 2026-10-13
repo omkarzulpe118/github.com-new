@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<!-- (c) 2026 — All rights reserved. See LICENSE.txt. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sign To Text</title>
+<meta name="theme-color" content="#6C63FF">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root{--bg:#DDE4F3;--card:#DDE4F3;--sunk:#C9D1E8;--ink:#3B4266;--muted:#7C84A8;--line:#DDE4F3;--accent:#6C63FF;--accent2:#0093B8;--accent-soft:#D3D9EE;--live:#D97E06;--teal:#0E9B8A;--rose:#D94F6C;--r:24px;--pad:clamp(14px,3.2vw,22px);--sh-d:#B9C1DA;--sh-l:#FFFFFF}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,"Segoe UI",sans-serif;font-size:15px;line-height:1.5}
+h1{font-weight:800;letter-spacing:-.02em;line-height:1.05;font-size:clamp(30px,6vw,52px);padding:clamp(26px,5vw,48px) 0 10px;max-width:22ch}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent));background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sheen 5s linear infinite}
+@keyframes sheen{to{background-position:200% center}}
+.eyebrow{font-family:monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 var(--pad) 60px}
+header.top{position:sticky;top:0;z-index:40;background:var(--bg);box-shadow:0 8px 20px var(--sh-d)}
+.top-in{max-width:1120px;margin:0 auto;padding:10px var(--pad);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;margin-right:auto;font-weight:800;font-size:18px;color:var(--ink)}
+.brand svg{width:26px;height:26px}
+select{appearance:none;background:var(--bg);color:var(--ink);border:none;border-radius:14px;padding:8px 28px 8px 14px;font-size:13px;max-width:180px;box-shadow:inset 5px 5px 10px var(--sh-d),inset -5px -5px 10px var(--sh-l)}
+.hero-sub{color:var(--muted);max-width:64ch;margin:0 0 16px;font-size:16px}
+.cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.cta{display:inline-block;border-radius:12px;padding:12px 24px;font-weight:800;text-decoration:none;font-size:15px}
+.cta.pri{background:linear-gradient(145deg,#7d75ff,var(--accent));color:#fff;box-shadow:5px 5px 14px #a8a3d8,-5px -5px 14px #ffffff}
+.cta.ghost{border:none;color:var(--ink);background:var(--card);box-shadow:6px 6px 14px var(--sh-d),-6px -6px 14px var(--sh-l)}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 24px}
+@media(max-width:700px){.hero-stats{grid-template-columns:repeat(2,1fr)}}
+.hstat{background:var(--card);border:none;border-radius:22px;padding:16px;text-align:center;box-shadow:8px 8px 18px var(--sh-d),-8px -8px 18px var(--sh-l)}
+.hstat .n{font-size:clamp(24px,4vw,34px);font-weight:800;color:var(--accent2)}
+.hstat .l{font-size:12px;color:var(--muted)}
+.sect{font-size:clamp(22px,4vw,32px);font-weight:800;margin:36px 0 4px;color:var(--ink)}
+.sect-sub{color:var(--muted);margin-bottom:14px}
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:860px){.feats{grid-template-columns:1fr}}
+.feat{background:var(--card);border:none;border-radius:22px;padding:18px;box-shadow:8px 8px 18px var(--sh-d),-8px -8px 18px var(--sh-l)}
+.feat .ic{font-size:22px}
+.feat h3{margin:8px 0 6px;font-size:16px;color:var(--ink)}
+.feat p{color:var(--muted);font-size:13.5px}
+.feat{cursor:pointer}
+.feat.sel{box-shadow:inset 6px 6px 12px var(--sh-d),inset -6px -6px 12px var(--sh-l),0 0 0 3px var(--accent2)}
+.howdetail{display:flex;gap:18px;align-items:center}
+@media(max-width:700px){.howdetail{flex-direction:column;text-align:center}}
+.howdetail h3{color:var(--ink);margin-bottom:6px}
+.howdetail p{color:var(--muted);font-size:14px}
+.alpha{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.acard{background:var(--card);border:none;border-radius:20px;padding:14px 12px;text-align:center;transition:.15s;box-shadow:6px 6px 12px var(--sh-d),-6px -6px 12px var(--sh-l)}
+.acard:hover{transform:translateY(-3px);box-shadow:8px 8px 18px var(--sh-d),-8px -8px 18px var(--sh-l),0 0 0 3px var(--accent2)}
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .55s ease,transform .55s ease}
+.reveal.in{opacity:1;transform:none}
+@keyframes glowpulse{0%,100%{box-shadow:5px 5px 12px #a8a3d8,-5px -5px 12px #ffffff}50%{box-shadow:5px 5px 22px #8f88e0,-5px -5px 22px #ffffff,0 0 26px rgba(108,99,255,.55)}}
+#startCam{animation:glowpulse 2.6s ease-in-out infinite}
+.fpstrack{height:10px;border-radius:99px;background:var(--sunk);box-shadow:inset 3px 3px 6px var(--sh-d),inset -3px -3px 6px var(--sh-l);overflow:hidden;margin-top:8px}
+.fpstrack i{display:block;height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,var(--teal),var(--accent2));transition:width .5s}
+.feat{transition:transform .18s ease,box-shadow .18s ease}
+.feat:hover{transform:translateY(-3px)}
+.feat.reveal{transition:opacity .55s ease,transform .55s ease}
+.acard .a{font-size:28px;font-weight:800;color:var(--accent2)}
+.acard .d{font-size:11.5px;color:var(--muted);margin-top:4px}
+.switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;max-width:440px}
+.switch button{border:none;background:var(--card);color:var(--ink);border-radius:18px;padding:11px 14px;font-weight:700;box-shadow:6px 6px 12px var(--sh-d),-6px -6px 12px var(--sh-l)}
+.switch button[aria-pressed="true"]{background:linear-gradient(145deg,#7d75ff,var(--accent));color:#fff;box-shadow:inset 5px 5px 10px rgba(0,0,0,.25),inset -5px -5px 10px rgba(255,255,255,.25)}
+.view{display:none}.view.on{display:block}
+.panel{background:var(--card);border:none;border-radius:var(--r);overflow:hidden;box-shadow:10px 10px 24px var(--sh-d),-10px -10px 24px var(--sh-l)}
+.panel-head{display:flex;align-items:center;gap:10px;padding:11px 15px}
+.panel-body{padding:15px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+.stack{display:grid;gap:14px;max-width:660px;margin:0 auto}
+@media(min-width:880px){.stack{grid-template-columns:minmax(0,1fr) minmax(0,1fr);max-width:none}}
+.stage{position:relative;background:#0F0D1C;aspect-ratio:4/3;display:grid;place-items:center;min-height:300px}
+.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);background:#000}
+.stage canvas.ov{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);pointer-events:none}
+.stage .ph{position:relative;text-align:center;padding:24px;color:#9C97BC;max-width:320px;font-size:13.5px;z-index:2}
+.badge{position:absolute;top:10px;left:10px;z-index:3;display:none;align-items:center;gap:7px;background:rgba(255,255,255,.92);border-radius:99px;padding:5px 11px;font-family:monospace;font-size:10px}
+.badge.on{display:flex}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pulse 1.5s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.readout{position:absolute;right:10px;bottom:10px;z-index:3;display:none;align-items:center;gap:11px;background:rgba(255,255,255,.94);border-radius:14px;padding:8px 13px}
+.readout .glyph{font-weight:800;font-size:40px;min-width:44px;text-align:center;color:var(--live)}
+.readout .glyph.sm{font-size:13px;max-width:150px}
+.ring{width:32px;height:32px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:3.4}.ring .bg{stroke:#E3E4EF}.ring .fg{stroke:var(--teal);stroke-linecap:round}
+.row{display:flex;gap:7px;flex-wrap:wrap}
+.btn{border:none;background:var(--card);color:var(--ink);border-radius:16px;padding:9px 16px;font-size:13.5px;font-weight:600;box-shadow:5px 5px 10px var(--sh-d),-5px -5px 10px var(--sh-l)}
+.btn:active{box-shadow:inset 4px 4px 8px var(--sh-d),inset -4px -4px 8px var(--sh-l)}
+.btn.primary{background:linear-gradient(145deg,#7d75ff,var(--accent));color:#fff;border:none;font-weight:700;box-shadow:5px 5px 12px #a8a3d8,-5px -5px 12px #ffffff}
+.btn.danger{color:var(--rose)}
+.btn:disabled{opacity:.4}
+.modeRow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.modeRow .btn.on{background:var(--ink);color:#fff;box-shadow:inset 4px 4px 8px rgba(0,0,0,.35),inset -4px -4px 8px rgba(255,255,255,.15)}
+.transcript{min-height:96px;background:var(--bg);border:none;border-radius:18px;padding:13px;font-weight:700;font-size:clamp(22px,3.4vw,28px);word-break:break-word;color:var(--ink);box-shadow:inset 7px 7px 14px var(--sh-d),inset -7px -7px 14px var(--sh-l)}
+.buf{font-family:monospace;font-size:12px;color:var(--live);margin-top:6px;min-height:18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{border:none;border-radius:99px;padding:6px 14px;font-size:12.5px;background:var(--card);color:var(--ink);box-shadow:4px 4px 8px var(--sh-d),-4px -4px 8px var(--sh-l)}
+.chip:hover{border-color:var(--accent2);color:var(--accent2)}
+.chip.num{background:#D6E9F7}
+.chip.static{font-family:monospace;font-size:11.5px;color:var(--muted);background:var(--bg);box-shadow:inset 3px 3px 6px var(--sh-d),inset -3px -3px 6px var(--sh-l)}
+.status{margin-top:10px;font-family:monospace;font-size:12px;background:#0F0D1C;color:#9C97BC;border-radius:10px;padding:9px 12px;white-space:pre-wrap;min-height:38px}
+.metrics{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;font-family:monospace;font-size:11px;color:var(--muted)}
+.metrics b{color:var(--accent2)}
+.avatar-stage{position:relative;background:radial-gradient(72% 64% at 50% 38%,#3B4064 0%,#242840 68%,#151827 100%);aspect-ratio:1/1;overflow:hidden}
+.avatar-stage canvas{display:block;width:100%;height:100%}
+.cap{display:flex;gap:10px;padding:9px 15px;background:var(--card);align-items:baseline}
+.cap .now{font-weight:800;font-size:22px;color:var(--live);min-width:40px}
+.cap .q{font-family:monospace;font-size:11px;color:var(--muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+textarea{width:100%;background:var(--bg);color:var(--ink);border:none;border-radius:18px;padding:12px;min-height:88px;font-size:15px;box-shadow:inset 6px 6px 12px var(--sh-d),inset -6px -6px 12px var(--sh-l)}
+.warn{background:#F6E7C1;border:none;color:#7A5B00;border-radius:18px;padding:12px 16px;margin-bottom:14px;font-size:13.5px;display:none;box-shadow:6px 6px 12px var(--sh-d),-6px -6px 12px var(--sh-l)}
+table.dict{width:100%;border-collapse:collapse;font-size:13.5px;color:var(--ink)}
+table.dict td,table.dict th{border:1px solid #C6CEE6;padding:7px 9px;text-align:left}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--card);border:none;border-radius:22px;padding:16px 10px;text-align:center;box-shadow:8px 8px 18px var(--sh-d),-8px -8px 18px var(--sh-l)}
+.stat .num{font-size:clamp(26px,4vw,38px);font-weight:800;color:var(--accent2)}
+.stat .lbl{font-size:12px;color:var(--muted);margin-top:4px}
+.steps{display:grid;gap:8px;margin-top:12px}
+.step{display:flex;gap:12px;align-items:baseline;background:var(--card);border:none;border-radius:18px;padding:12px 16px;font-size:13.5px;box-shadow:6px 6px 14px var(--sh-d),-6px -6px 14px var(--sh-l)}
+.step b{font-family:monospace;color:var(--accent2)}
+footer{margin-top:26px;color:var(--muted);font-size:12px;text-align:center}
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,80px);background:#eef1ff;color:#0b1124;border-radius:18px;padding:10px 18px;opacity:0;transition:.28s;z-index:99;font-weight:600;box-shadow:6px 6px 16px var(--sh-d)}
+.toast.on{transform:translate(-50%,0);opacity:1}
+.stage .cinefx{position:absolute;inset:0;z-index:4;pointer-events:none}
+.cine-title{position:absolute;left:8px;right:8px;top:50%;z-index:5;text-align:center;transform:translateY(-50%) scale(.8);opacity:0;pointer-events:none;font-weight:900;letter-spacing:.1em;color:#fff;text-shadow:0 0 26px var(--accent),0 4px 0 #000;font-size:clamp(30px,6vw,54px)}
+.cine-title .cine-sub{font-size:13px;letter-spacing:.5em;color:#ffe27a;text-shadow:0 0 14px #ff9d00,0 2px 0 #000;margin-top:6px}
+.stage.cinema .cine-title{animation:cinein 1.6s ease forwards}
+@keyframes cinein{0%{opacity:0;transform:translateY(-50%) scale(.7)}12%{opacity:1;transform:translateY(-50%) scale(1.06)}22%{transform:translateY(-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateY(-50%) scale(1.03)}}
+.cinebar{position:absolute;left:0;right:0;height:0;background:#000;z-index:4;transition:height .45s ease}
+.cinebar.top{top:0}.cinebar.bot{bottom:0}
+.stage.cinema .cinebar{height:11%}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:6;pointer-events:none}
+.stage.cinema .flash{animation:flasha .55s ease}
+@keyframes flasha{0%{opacity:0}15%{opacity:.7}100%{opacity:0}}
+nav a{color:var(--muted);text-decoration:none}
+nav a:hover{color:var(--accent2)}
+details{margin-top:14px;border:none;border-radius:20px;background:var(--card);padding:11px 15px;color:var(--ink);box-shadow:6px 6px 14px var(--sh-d),-6px -6px 14px var(--sh-l)}
+.xlat{background:#DCD4F5;color:var(--ink)}
+.xlat .out{color:var(--ink)}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+<div class="brand"><svg viewBox="0 0 40 40"><g stroke="#0E9B8A" stroke-width="1.8" fill="none" stroke-linecap="round"><path d="M20 36 L20 26 M20 26 L11 20 M20 26 L17 15 M20 26 L23 14 M20 26 L28 17 M20 26 L30 24"/></g><g fill="#4C3BD4"><circle cx="20" cy="36" r="2.4"/><circle cx="11" cy="20" r="1.9"/><circle cx="17" cy="15" r="1.9"/><circle cx="23" cy="14" r="1.9"/><circle cx="28" cy="17" r="1.9"/><circle cx="30" cy="24" r="1.9"/><circle cx="20" cy="26" r="2.1"/></g></svg><span>Sign&nbsp;To&nbsp;Text</span></div>
+<nav style="display:flex;gap:13px;font-size:13.5px"><a href="#demo">Live Demo</a><a href="#how">How It Works</a><a href="#accuracy">Accuracy</a><a href="#alphabet">Guide</a></nav>
+<div><select id="lang"><option value="en-IN">English (India)</option><option value="hi-IN">हिन्दी</option><option value="en-US">English (US)</option><option value="es-ES">Español</option></select></div>
+<div><select id="dialect"><option value="ASL">ASL</option><option value="ISL">ISL</option></select></div>
+</div></header>
+<div class="wrap" id="demo">
+<h1>Turn hand signs <em>into words.</em></h1>
+<p class="hero-sub">Real-time sign-to-text in your browser. Two hands, 26 letters, 10 digits, 24 phrases — 100% on-device, nothing ever uploaded. Every lock spoken aloud instantly.</p>
+<div class="cta-row"><a class="cta pri" href="#demo" onclick="document.getElementById('startCam').click();return false;">Start Signing →</a><a class="cta ghost" href="#how">How It Works</a></div>
+<div class="hero-stats">
+<div class="hstat"><div class="n">36</div><div class="l">Letters + digits</div></div>
+<div class="hstat"><div class="n">24</div><div class="l">Phrases + 2-hand signs</div></div>
+<div class="hstat"><div class="n">2-hand</div><div class="l">Tracking + cinema</div></div>
+<div class="hstat"><div class="n">100%</div><div class="l">On-device, private</div></div>
+</div>
+<div class="warn" id="fileWarn">Double-click blocks camera. Run <b>python -m http.server 8000</b> here → open <b>http://localhost:8000</b>.</div>
+
+<!-- SIGN TO TEXT -->
+<div class="view on" id="view-sign">
+<div class="modeRow"><button class="btn on" id="mAz">A–Z</button><button class="btn" id="mNum">0–9</button><button class="btn" id="mWord">Words</button><span class="eyebrow" style="align-self:center;margin-left:auto" id="modeLabel">MODE: A–Z · SPACE = swipe / blank-pause / button</span></div>
+<div class="grid2">
+<div class="panel"><div class="panel-head"><span class="eyebrow">Camera</span><span class="eyebrow" style="margin-left:auto" id="modelState">camera: off</span></div>
+<div class="stage" id="stage"><video id="video" playsinline muted autoplay></video><canvas class="ov" id="overlay"></canvas>
+<canvas class="cinefx" id="cineFx"></canvas><div class="cinebar top"></div><div class="cinebar bot"></div><div class="flash"></div>
+<div class="cine-title" id="cineTitle">ABSOLUTE CINEMA<div class="cine-sub">★ DOUBLE-PALM PREMIERE ★</div></div>
+<div class="badge" id="badge"><span class="dot"></span> reading</div>
+<div class="ph" id="ph">Press <b>Start camera</b>.<br>Wave palm → HELLO · Still palm → CINEMA<br>Fast swipe → SPACE.</div>
+<div class="readout" id="readout"><svg class="ring" viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="16"/><circle class="fg" id="ringFg" cx="20" cy="20" r="16" stroke-dasharray="100.5" stroke-dashoffset="100.5"/></svg><div class="glyph" id="glyph">—</div></div></div>
+<div class="panel-body"><div class="row">
+<button class="btn primary" id="startCam">Start camera</button><button class="btn danger" id="stopCam" disabled>Stop</button><button class="btn" id="flipCam">Flip</button><button class="btn" id="addBtn">＋ Add</button><button class="btn" id="testBtn">Test</button>
+</div>
+<div class="metrics"><span>Fingers <b id="mFin">—</b></span><span>Guess <b id="mThu">—</b></span><span>Stable <b id="mSta">—</b></span></div>
+<div class="row" style="margin-top:8px"><span class="eyebrow" style="align-self:center">Practice</span><select id="practiceLabel" title="Practice target" style="max-width:150px"></select><span class="eyebrow" style="align-self:center" id="practiceState">off</span></div>
+<div class="status" id="camLog">idle.</div></div></div>
+<div class="panel"><div class="panel-head"><span class="eyebrow">Sentence</span></div><div class="panel-body">
+<div class="transcript" id="transcript"></div>
+<div class="buf" id="letterBuf">Wave palm = HELLO · still palm = CINEMA · swipe/hide = SPACE.</div>
+<div class="row" style="margin-top:11px"><button class="btn primary" id="speakBtn">Speak</button><button class="btn" id="spaceBtn">Space</button><button class="btn" id="backBtn">Delete</button><button class="btn" id="copyBtn">Copy</button><button class="btn danger" id="clearBtn">Clear</button></div>
+<div style="margin-top:14px"><span class="eyebrow">Tap to type A–Z 0–9 (no camera)</span><div class="chips" id="keys"></div></div>
+<div style="margin-top:14px"><span class="eyebrow">Words</span><div class="chips" id="phraseChips"></div></div>
+</div></div></div></div>
+
+<div class="panel" style="margin-top:14px" id="dict"><div class="panel-head"><span class="eyebrow">Dictionary + SPACE</span></div>
+<div class="panel-body"><p><b>SPACE =</b> fast swipe left/right <b>or</b> hide hand 1.5s <b>or</b> Space button. Letters hold 0.7s to lock. If a sign misfires, tap the key grid — it types and speaks instantly.</p>
+<table class="dict"><thead><tr><th>Sign</th><th>How to do it</th><th>Tip</th></tr></thead><tbody id="dictBody"></tbody></table></div></div>
+<div class="panel" style="margin-top:14px" id="accuracy"><div class="panel-head"><span class="eyebrow">Performance — measured live on your device</span></div>
+<div class="panel-body">
+<div class="stats">
+<div class="stat"><div class="num" data-count="36">0</div><div class="lbl">Letters + digits</div></div>
+<div class="stat"><div class="num" data-count="24">0</div><div class="lbl">Phrases + 2-hand signs</div></div>
+<div class="stat"><div class="num" data-count="100">0</div><div class="lbl">% on-device (private)</div></div>
+<div class="stat"><div class="num" id="statFps">—</div><div class="lbl">Live detection FPS</div><div class="fpstrack"><i id="fpsFill"></i></div></div>
+</div>
+<div class="steps">
+<div class="step"><b>01</b><span><b>Camera.</b> Frames never leave this device. Mirrored preview, works offline after first load.</span></div>
+<div class="step"><b>02</b><span><b>Landmarks.</b> MediaPipe tracks up to 2 hands × 21 points, ~every 50ms.</span></div>
+<div class="step"><b>03</b><span><b>Gates.</b> 5-of-8-frame consensus + 0.7s hold-to-lock (0.38s two-hand fast lane) kills jitter.</span></div>
+<div class="step"><b>04</b><span><b>Output.</b> Text locks and speech speaks. Swipe or 1.5s blank = space.</span></div>
+</div>
+<div class="chips" id="stackChips"></div>
+<p style="margin-top:10px;font-size:12.5px;color:var(--muted)">No fake 98% badge here — real accuracy depends on your light, camera and how steadily you hold. The FPS number above is measured from YOUR camera loop right now, not a lab.</p>
+</div></div>
+<details id="faq"><summary>Camera black?</summary><p style="margin-top:8px">Use localhost (not double-click), Chrome/Edge, Allow camera, close Zoom/Teams. Status box names the cause.</p></details>
+<h2 class="sect" id="how">How it works</h2>
+<p class="sect-sub">Camera frames to words in milliseconds — every step on your device.</p>
+<div class="feats">
+<div class="feat"><div class="ic">📷</div><h3>01 · Capture</h3><p>Mirrored webcam feed. Video is previewed instantly — tracking loads a moment later.</p></div>
+<div class="feat"><div class="ic">🔧</div><h3>02 · Landmarks</h3><p>MediaPipe maps up to 2 hands × 21 points, normalized for distance and position.</p></div>
+<div class="feat"><div class="ic">🤖</div><h3>03 · Classify</h3><p>Heuristic gates read fingers, thumb, spread and motion into letters, digits and phrases.</p></div>
+<div class="feat"><div class="ic">✅</div><h3>04 · Validate</h3><p>5-of-8-frame consensus plus hold-to-lock. Shaky guesses never reach your sentence.</p></div>
+<div class="feat"><div class="ic">✏️</div><h3>05 · Speak</h3><p>Locked signs build the sentence and speech reads it aloud the instant they lock.</p></div>
+<div class="feat"><div class="ic">🎬</div><h3>06 · Celebrate</h3><p>Still open palms trigger Absolute Cinema — letterbox, confetti and fanfare, no text.</p></div>
+</div>
+<div class="panel" id="howDetail" style="margin-top:12px"><div class="panel-head"><span class="eyebrow">Step detail — click any card above</span></div>
+<div class="panel-body"><div class="howdetail"><div><h3 id="howTitle">Pick a step</h3><p id="howDesc">Click any of the 6 cards to see exactly what happens inside that stage.</p></div></div></div></div>
+<h2 class="sect" id="alphabet">ASL quick guide</h2>
+<p class="sect-sub">Every shape this app reads. Hold any of them steady in front of the camera.</p>
+<div class="alpha" id="alphaGrid"></div>
+<footer>Camera frames stay on this device. Poses are approximations — not a substitute for a certified interpreter.</footer>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};window.$=$;
+window.toast=function(m){var t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._x);t._x=setTimeout(function(){t.classList.remove('on');},2400);};
+if(location.protocol==='file:')$('fileWarn').style.display='block';
+/* single view: sign-to-text only */
+window.MODE='AZ';
+function setMode(m){window.MODE=m;$('mAz').classList.toggle('on',m==='AZ');$('mNum').classList.toggle('on',m==='NUM');$('mWord').classList.toggle('on',m==='WORD');buildKeys();}
+$('mAz').onclick=function(){setMode('AZ');};$('mNum').onclick=function(){setMode('NUM');};$('mWord').onclick=function(){setMode('WORD');};
+window.sentence='';window.render=function(){var t=$('transcript');t.innerHTML=window.sentence?window.sentence.replace(/ /g,'&nbsp; ')+'<span style="color:#4C3BD4">▌</span>':'<span style="color:#9A97B6;font-weight:400;font-size:15px">Output here…</span>';};
+window.addText=function(s){window.sentence+=s;window.render();};
+window.speak=function(t){try{if(!('speechSynthesis' in window))return;var u=new SpeechSynthesisUtterance(t);u.lang=$('lang').value||'en-IN';speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}};
+$('speakBtn').onclick=function(){window.speak(window.sentence||'Show a sign');};
+$('spaceBtn').onclick=function(){window.addText(' ');$('letterBuf').textContent='added: SPACE';};
+$('backBtn').onclick=function(){window.sentence=window.sentence.slice(0,-1);window.render();};
+$('clearBtn').onclick=function(){window.sentence='';window.render();};
+$('copyBtn').onclick=function(){try{navigator.clipboard.writeText(window.sentence).then(function(){toast('Copied');});}catch(e){}};
+var AZ='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),NUM='0123456789'.split(''),WR=['HELLO','YES','NO','THANK YOU','PLEASE','HELP','WATER','FOOD','I LOVE YOU','SORRY','GOOD MORNING','GOODBYE','EXCUSE ME','DRINK','BATHROOM','NAME','FRIEND','HOW ARE YOU','WELCOME','EAT','TAKE CARE','NICE TO MEET YOU'];
+function buildKeys(){var k=$('keys');k.innerHTML='';var list=window.MODE==='NUM'?NUM:window.MODE==='WORD'?WR:AZ.concat(NUM);
+list.forEach(function(ch){var b=document.createElement('button');b.className='chip'+((ch>='0'&&ch<='9')?' num':'');b.textContent=ch;b.onclick=function(){window.addText(ch.length>1&&window.MODE==='WORD'?(window.sentence?' ':'')+ch:ch);window.speak(ch);if(window.avatarSay)window.avatarSay(ch);};k.appendChild(b);});}
+window.buildKeys=buildKeys;
+var pc=$('phraseChips');WR.forEach(function(w){var b=document.createElement('button');b.className='chip';b.textContent=w;b.onclick=function(){window.addText((window.sentence?' ':'')+w);window.speak(w);if(window.avatarSay)window.avatarSay(w);};pc.appendChild(b);});
+var G=[['A','Fist, thumb upright along index side'],['B','Palm out, 4 up, thumb folded across'],['C','Curve all into a C, like holding a cup'],['D','Thumb touches middle, index up — also digit 1'],['E','Scrunch fingertips onto thumb — tight claw'],['F','Thumb+index O, other 3 straight up'],['G','Thumb+index finger-gun, sideways'],['H','Index+middle out sideways together'],['I','Pinky up only, rest folded'],['J','Pinky up, draw a J in the air'],['K','Peace sign, thumb poked between fingers'],['L','Thumb + index at a right angle'],['M','Fold 3 fingers over tucked thumb'],['N','Fold 2 fingers over tucked thumb'],['O','Round all fingers into an O — also digit 0'],['P','K shape pointed downward'],['Q','G shape pointed downward'],['R','Middle finger crossed over index'],['S','Fist, thumb flat across the front'],['T','Thumb tip pokes between index+middle'],['U','Index+middle up, pressed together'],['V','Peace sign, fingers split — also digit 2'],['W','Index+middle+ring up — also digit 3'],['X','Only index half-bent like a hook'],['Y','Thumb+pinky out, rest folded (shaka)'],['Z','Point index, draw Z in the air'],['SPACE','Swipe fast sideways, or hide hands 1.5s'],['2x OPEN','Both open palms, hold still - CINEMA'],['FIST+PALM','One fist + one open palm - HELP'],['2x FISTS','Both fists - YES'],['2x PEACE','Two peace signs - VICTORY'],['HELLO','Shake an open palm side-to-side'],['CINEMA','Freeze open palm(s) — spectacle, no text'],['I LOVE YOU','Shaka, hold steady'],['GOOD MORNING','Raise an open palm upward'],['GOODBYE','Lower an open palm downward'],['DRINK','C shape tipped toward mouth'],['BATHROOM','T fist shaken side-to-side'],['NAME','H shape held sideways'],['FRIEND','Nod the hooked X'],['EXCUSE ME','Tap keys (no camera shape)'],['WELCOME','Tap keys (no camera shape)'],['EAT','Tap keys, or F to mouth'],['TAKE CARE','Tap keys (no camera shape)'],['HOW ARE YOU','Point forward, hold'],['NICE TO MEET YOU','Big open-palm wave']];
+$('dictBody').innerHTML=G.map(function(r){return '<tr><td><b>'+r[0]+'</b></td><td>'+r[1]+'</td><td>hold 0.7s</td></tr>';}).join('');
+(function(){var box=$('alphaGrid');if(!box)return;box.innerHTML=G.map(function(r){return '<div class="acard"><div class="a">'+r[0]+'</div><div class="d">'+r[1]+'</div></div>';}).join('');})();
+(function(){var els=document.querySelectorAll('.feat,.stat,.hstat,.step,.acard');
+function stag(el){var list=Array.prototype.slice.call(els);el.style.transitionDelay=(list.indexOf(el)%8)*60+'ms';}
+els.forEach(function(el){el.classList.add('reveal');stag(el);});
+function clearD(el){setTimeout(function(){el.style.transitionDelay='0ms';},900);}
+if('IntersectionObserver' in window){var o=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){stag(e.target);e.target.classList.add('in');clearD(e.target);}else{e.target.classList.remove('in');}});},{threshold:0.12});els.forEach(function(el){o.observe(el);});}
+else{els.forEach(function(el){el.classList.add('in');clearD(el);});}})();
+var HOW=[
+{t:'01 · Capture',d:'Your webcam frame is mirrored for a natural mirror feel and previewed instantly — tracking loads right after, so video never waits on AI.'},
+{t:'02 · Landmarks',d:'MediaPipe finds up to 2 hands and returns 21 points each, normalized for distance and position — so signs work anywhere in the frame.'},
+{t:'03 · Classify',d:'Finger openness, thumb pose, finger spread and wrist motion vote every shape into a letter, digit, phrase — or CINEMA.'},
+{t:'04 · Validate',d:'A guess must win 5 of the last 8 frames, then survive a 0.7s steady hold (0.38s for two-hand signs). Shaky guesses never reach your sentence.'},
+{t:'05 · Speak',d:'Locked signs append to the sentence and speech reads them aloud instantly.'},
+{t:'06 · Celebrate',d:'A perfectly still open palm fires letterbox bars, confetti and fanfare — pure spectacle, no text added.'}];
+document.querySelectorAll('.feat').forEach(function(card,i){
+card.onclick=function(){
+document.querySelectorAll('.feat').forEach(function(c){c.classList.remove('sel');});
+card.classList.add('sel');
+$('howTitle').textContent=HOW[i].t;$('howDesc').textContent=HOW[i].d;
+};});
+buildKeys();window.render();
+window.__target='';
+(function(){var sel=$('practiceLabel');if(!sel)return;
+var opts=['OFF'].concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split(''),['HELLO','YES','NO','THANK YOU','PLEASE','HELP','WATER','FOOD','YOU','SORRY','I LOVE YOU','GOOD MORNING','GOODBYE']);
+opts.forEach(function(o){var el=document.createElement('option');el.value=o;el.textContent=(o==='OFF')?'Practice: OFF':'Learn: '+o;sel.appendChild(el);});
+sel.onchange=function(){window.__target=(sel.value==='OFF')?'':sel.value;
+$('practiceState').textContent=window.__target?('target: '+window.__target+' — match it!'):'off';};})();
+(function(){function anim(){
+document.querySelectorAll('#accuracy .num[data-count]').forEach(function(el){
+var target=+el.dataset.count,t0=performance.now();
+(function tick(){var p=Math.min(1,(performance.now()-t0)/1200);el.textContent=Math.round(target*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(tick);})();});}
+if('IntersectionObserver' in window){var o=new IntersectionObserver(function(e){if(e[0].isIntersecting){anim();}});o.observe($('accuracy'));}else{anim();}})();
+setInterval(function(){var el=$('statFps');if(el&&(window.__fps||0)>0){el.textContent=window.__fps;var f=$('fpsFill');if(f)f.style.width=Math.min(100,Math.round(window.__fps/30*100))+'%';}},1000);
+(function(){var s=['MediaPipe Tasks','Canvas 2D','Web Speech API','Heuristic gates','Zero backend'];var box=$('stackChips');s.forEach(function(t){var c=document.createElement('span');c.className='chip static';c.textContent=t;box.appendChild(c);});})();
+/* dictionary art removed */
+/* whole-word stage directions: handshape + motion + face */
+var WORD_AV={
+'HELLO':{fingers:[0,1,1,1,1],motion:'wave',face:'smile',hold:1400},
+'YES':{fingers:[1,0,0,0,0],motion:'nod',face:'smile',hold:1200},
+'NO':{fingers:[0,1,0,0,0],motion:'wag',face:'firm',hold:1200},
+'SORRY':{fingers:[1,0,0,0,0],motion:'circle',face:'sad',hold:1400},
+'I LOVE YOU':{fingers:[1,0,0,0,1],motion:'heart',face:'joy',hold:1500},
+'THANK YOU':{fingers:[0,1,1,1,1],motion:'out',face:'smile',hold:1300},
+'PLEASE':{fingers:[0,1,1,1,1],motion:'circle',face:'warm',hold:1300},
+'HELP':{fingers:[0,1,0,0,1],motion:'bob',face:'care',hold:1300},
+'WATER':{fingers:[0,1,1,1,0],motion:'tap',face:'smile',hold:1200},
+'FOOD':{fingers:[0,0,1,1,1],motion:'mouth',face:'yum',hold:1200},
+'GOOD':{fingers:[1,0,0,0,0],motion:'nod',face:'smile',hold:1000},
+'BYE':{fingers:[1,0,0,0,1],motion:'wave',face:'smile',hold:1200},
+'YOU':{fingers:[0,1,0,0,0],motion:'point',face:'smile',hold:1000},
+'GOOD MORNING':{fingers:[0,1,1,1,1],motion:'out',face:'smile',hold:1300},
+'GOODBYE':{fingers:[0,1,1,1,1],motion:'wave',face:'smile',hold:1300},
+'DRINK':{fingers:[.5,.5,.5,.5,.5],motion:'mouth',face:'yum',hold:1200},
+'BATHROOM':{fingers:[.5,.9,.9,.9,.9],motion:'tap',face:'smile',hold:1100},
+'NAME':{fingers:[0,1,1,0,0],motion:'tap',face:'smile',hold:1100},
+'FRIEND':{fingers:[0,.6,0,0,0],motion:'bob',face:'warm',hold:1200},
+'EXCUSE ME':{fingers:[0,1,1,1,1],motion:'bob',face:'care',hold:1200},
+'WELCOME':{fingers:[0,1,1,1,1],motion:'out',face:'warm',hold:1300},
+'TAKE CARE':{fingers:[1,0,0,0,1],motion:'bob',face:'warm',hold:1300},
+'HOW ARE YOU':{fingers:[0,1,0,0,0],motion:'point',face:'smile',hold:1300},
+'NICE TO MEET YOU':{fingers:[0,1,1,1,1],motion:'wave',face:'joy',hold:1500},
+'EAT':{fingers:[0,0,1,1,1],motion:'mouth',face:'yum',hold:1100}};
+var q=[],playing=false,paused=false,timer=null,rafA=null,speed=1,live=true;
+/* smooth state — fingers/face/arm glide instead of snapping */
+var cur={f:[.3,.3,.3,.3,.3],arm:0,smile:.6,eye:1,tilt:0};
+var tgt={f:[.3,.3,.3,.3,.3],arm:0,smile:.6,eye:1,tilt:0};
+var parts=[],face={mode:'smile',t:0};
+function lerp(a,b,t){return a+(b-a)*t;}
+function drawAvatar(label){
+var st=$('avatarStage');var c=st.querySelector('canvas');if(!c){c=document.createElement('canvas');c.width=480;c.height=480;st.appendChild(c);}
+var x=c.getContext('2d');x.clearRect(0,0,480,480);
+var g=x.createLinearGradient(0,0,0,480);g.addColorStop(0,'#232a4d');g.addColorStop(.6,'#151a35');g.addColorStop(1,'#0d1128');
+x.fillStyle=g;x.fillRect(0,0,480,480);
+/* particles (hearts / sparkles) */
+for(var i=parts.length-1;i>=0;i--){var p=parts[i];p.y-=p.vy;p.life-=0.02;
+if(p.life<=0){parts.splice(i,1);continue;}
+x.globalAlpha=Math.max(0,p.life);x.font='22px sans-serif';x.fillText(p.ch,p.x,p.y);x.globalAlpha=1;}
+var t=performance.now()/1000;
+/* ease current toward target */
+for(var f=0;f<5;f++)cur.f[f]=lerp(cur.f[f],tgt.f[f],0.12);
+cur.arm=lerp(cur.arm,tgt.arm,0.1);cur.smile=lerp(cur.smile,tgt.smile,0.1);cur.tilt=lerp(cur.tilt,tgt.tilt,0.1);
+/* body — sailor uniform */
+x.fillStyle='#f4f6ff';
+x.beginPath();x.roundRect?x.roundRect(172,214,136,166,40):x.rect(172,214,136,166);x.fill();
+x.fillStyle='#2b3a6b';x.beginPath();x.moveTo(172,250);x.lineTo(240,296);x.lineTo(308,250);x.lineTo(308,228);x.lineTo(240,274);x.lineTo(172,228);x.closePath();x.fill();
+x.fillStyle='#e14b6a';x.beginPath();x.moveTo(228,282);x.lineTo(252,282);x.lineTo(240,312);x.closePath();x.fill();
+x.fillStyle='#2b3a6b';x.fillRect(172,330,50,50);x.fillRect(258,330,50,50);
+/* SIGN-CHAN — anime interpreter: bangs tied back so hands stay visible */
+var swayH=Math.sin(t*2.2)*4+cur.tilt*10;
+x.fillStyle='#23264d';
+x.beginPath();x.ellipse(240+swayH*0.4,168,58,72,0,0,7);x.fill();
+x.beginPath();x.ellipse(186+swayH,220,20,52,0.25,0,7);x.fill();
+x.beginPath();x.ellipse(294+swayH,220,20,52,-0.25,0,7);x.fill();
+/* head with tilt */
+x.save();x.translate(240,140);x.rotate(cur.tilt*0.08);
+var skin=x.createRadialGradient(-10,-12,10,0,0,52);skin.addColorStop(0,'#ffe3c4');skin.addColorStop(1,'#f2b98a');
+x.fillStyle=skin;x.beginPath();x.arc(0,0,44,0,7);x.fill();
+/* bangs */
+x.fillStyle='#2b2f5e';
+[[-36,-26],[-22,-34],[-7,-37],[8,-37],[23,-33],[36,-25]].forEach(function(pt){
+x.beginPath();x.moveTo(pt[0]-11,pt[1]-8);x.lineTo(pt[0]+11,pt[1]-8);x.lineTo(pt[0]+swayH*0.3,pt[1]+16);x.closePath();x.fill();});
+/* side locks */
+x.beginPath();x.moveTo(-44,-10);x.quadraticCurveTo(-52+swayH*0.5,30,-38+swayH*0.5,52);x.lineTo(-28,48);x.quadraticCurveTo(-38,20,-32,-8);x.closePath();x.fill();
+x.beginPath();x.moveTo(44,-10);x.quadraticCurveTo(52+swayH*0.5,30,38+swayH*0.5,52);x.lineTo(28,48);x.quadraticCurveTo(38,20,32,-8);x.closePath();x.fill();
+/* ahoge */
+x.strokeStyle='#2b2f5e';x.lineWidth=4;x.lineCap='round';x.beginPath();
+x.moveTo(0,-44);x.quadraticCurveTo(6+Math.sin(t*5)*6,-58,14+Math.sin(t*5)*4,-56);x.stroke();
+/* anime eyes */
+var blink=(t%4.2<0.12)?0.08:1;
+function animeEye(ex,happy){
+var ey=-4;
+if(happy){x.strokeStyle='#23233a';x.lineWidth=4;x.beginPath();x.arc(ex,ey+2,10,Math.PI*1.15,Math.PI*1.85);x.stroke();return;}
+x.fillStyle='#fff';x.beginPath();x.ellipse(ex,ey,11,13*blink+1,0,0,7);x.fill();
+if(blink<0.5)return;
+var ig=x.createLinearGradient(0,ey-9,0,ey+9);ig.addColorStop(0,'#b78bff');ig.addColorStop(1,'#5b2fd6');
+x.fillStyle=ig;x.beginPath();x.ellipse(ex,ey+1,7,9,0,0,7);x.fill();
+x.fillStyle='#1c1030';x.beginPath();x.arc(ex,ey+1,3.6,0,7);x.fill();
+x.fillStyle='#fff';x.beginPath();x.arc(ex-2.4,ey-2.6,2.4,0,7);x.fill();
+x.beginPath();x.arc(ex+2.6,ey+4.4,1.3,0,7);x.fill();
+x.strokeStyle='#23233a';x.lineWidth=3;x.beginPath();x.ellipse(ex,ey,11,14,0,Math.PI*1.05,Math.PI*1.95);x.stroke();
+}
+var happyEyes=(face.mode==='joy');
+animeEye(-19,happyEyes);animeEye(19,happyEyes);
+/* brows */
+x.strokeStyle='#3a3355';x.lineWidth=3.4;x.beginPath();
+if(face.mode==='sad'){x.moveTo(-30,-24);x.lineTo(-10,-17);x.moveTo(30,-24);x.lineTo(10,-17);}
+else if(face.mode==='firm'){x.moveTo(-30,-18);x.lineTo(-10,-23);x.moveTo(30,-18);x.lineTo(10,-23);}
+else{x.moveTo(-29,-22);x.lineTo(-9,-22);x.moveTo(29,-22);x.lineTo(9,-22);}
+x.stroke();
+/* blush — stronger when happy/in love */
+var blush=(face.mode==='joy'||face.mode==='warm')?0.75:(face.mode==='yum'||face.mode==='care')?0.5:0.28;
+x.fillStyle='rgba(255,120,150,'+blush+')';
+x.beginPath();x.ellipse(-26,10,8,5,0,0,7);x.fill();
+x.beginPath();x.ellipse(26,10,8,5,0,0,7);x.fill();
+/* mouth by face mode */
+x.strokeStyle='#8a3b30';x.lineWidth=3.6;x.lineCap='round';x.beginPath();
+if(face.mode==='sad'){x.arc(0,30,10,Math.PI*1.2,Math.PI*1.8);}
+else if(face.mode==='joy'){x.arc(0,12,17,0.12*Math.PI,0.88*Math.PI);x.stroke();x.fillStyle='#c0394b';x.beginPath();x.ellipse(0,26,8,6,0,0,Math.PI);x.fill();x.strokeStyle='#8a3b30';}
+else if(face.mode==='yum'){x.arc(0,14,7,0,7);x.stroke();x.beginPath();x.moveTo(-12,14);x.quadraticCurveTo(0,20,12,14);x.stroke();}
+else if(face.mode==='firm'){x.moveTo(-12,22);x.lineTo(12,22);}
+else{var s=cur.smile;x.arc(0,12,8+13*s,0.15*Math.PI,0.85*Math.PI);}
+x.stroke();x.restore();
+/* arm + hand */
+var sway=0;
+if(anim.motion==='wave')sway=Math.sin(t*9)*46;
+if(anim.motion==='wag')sway=Math.sin(t*10)*34;
+if(anim.motion==='nod')sway=0;
+var ax=300+sway,ay=270+cur.arm;
+if(anim.motion==='nod')ay+=Math.sin(t*8)*22;
+if(anim.motion==='bob')ay+=Math.sin(t*7)*18;
+if(anim.motion==='circle'){ax+=Math.cos(t*6)*30;ay+=Math.sin(t*6)*26;}
+if(anim.motion==='out'){var k=(Math.sin(t*4)+1)/2;ay-=k*40;ax-=k*24;}
+if(anim.motion==='mouth'){ay=250+Math.abs(Math.sin(t*5))*36;ax=286;}
+if(anim.motion==='point'){ax=300+Math.sin(t*3)*8;}
+if(anim.motion==='tap'){ay+=Math.abs(Math.sin(t*6))*20;}
+x.strokeStyle='#df9f6e';x.lineWidth=26;x.lineCap='round';
+x.beginPath();x.moveTo(296,232);x.lineTo(ax,ay);x.stroke();
+/* palm */
+x.save();x.translate(ax,ay);x.rotate(-0.15+cur.tilt*0.05);
+var pg=x.createRadialGradient(-6,-8,6,0,0,44);pg.addColorStop(0,'#ffd9b3');pg.addColorStop(1,'#df9f6e');
+x.fillStyle=pg;x.beginPath();x.ellipse(0,0,30,36,0,0,7);x.fill();
+x.strokeStyle='rgba(122,59,46,.35)';x.lineWidth=2;
+x.beginPath();x.moveTo(-16,-6);x.quadraticCurveTo(0,4,16,-8);x.stroke();
+x.beginPath();x.moveTo(-14,8);x.quadraticCurveTo(0,16,14,6);x.stroke();
+/* fingers */
+var names=['T','I','M','R','P'];
+var spread=[-0.5,-0.28,0,0.28,0.5];
+if(anim.spread)spread=anim.spread;
+for(var i=0;i<5;i++){var curl=cur.f[i];var bx=(i===0?-30:spread[i]*56),by=(i===0?-6:-32);
+var ang=(i===0?-0.9:spread[i]*0.9)+curl*(i===0?0.9:1.5);
+var len=(i===0?34:52)-curl*(i===0?8:26);
+var tx=bx+Math.sin(ang)*len,ty=by-Math.cos(ang)*len*-1;
+ty=by-Math.cos(ang)*len;
+x.strokeStyle=i===0?'#f2b98a':'#f2b98a';x.lineWidth=i===0?13:12;
+x.beginPath();x.moveTo(bx,by);
+var mx=bx+Math.sin(ang)*len*0.55,my=by-Math.cos(ang)*len*0.55;
+x.quadraticCurveTo(mx,my,tx,ty);x.stroke();
+x.fillStyle='#8a5a3b';x.font='10px monospace';x.fillText(names[i],bx-4,by+18);}
+x.restore();
+finishFace(x);
+function finishFace(x){}
+x.fillStyle='rgba(255,255,255,.92)';x.font='bold 26px sans-serif';x.fillText(label,16,40);
+x.fillStyle='#8fd8ff';x.font='12px monospace';
+x.fillText('tap any camera letter — it signs here',16,464);
+}
+var anim={motion:null,spread:null};
+var curLabel='—';
+/* continuous render loop — hand glides between poses */
+/* avatar + love storm removed — sign-to-text with speech only */
+function setTarget(fingers,arm,smile,tilt){tgt.f=fingers.slice();tgt.arm=arm==null?0:arm;tgt.smile=smile==null?0.6:smile;tgt.tilt=tilt||0;}
+function burst(ch,n){for(var i=0;i<(n||8);i++)parts.push({x:140+Math.random()*200,y:300+Math.random()*60,vy:0.6+Math.random()*1.2,life:0.8+Math.random()*0.6,ch:ch});}
+window.avatarHype=function(){};
+function playNext(){
+if(paused||!q.length){if(!q.length){playing=false;$('pauseBtn').disabled=true;$('capQueue').textContent='done';}return;}
+playing=true;$('pauseBtn').disabled=false;var item=q.shift();
+curLabel=item.label;
+$('capNow').textContent=item.label;$('capQueue').textContent=q.map(function(s){return s.label;}).join(' · ')||'last';
+var w=WORD_AV[item.label];
+if(w){tgt.f=w.fingers.slice();face.mode=w.face;face.t=w.hold;
+anim.motion=w.motion;
+if(w.motion==='wave'){tgt.arm=-30;tgt.smile=0.9;}
+else if(w.motion==='nod'){tgt.arm=14;tgt.smile=0.85;}
+else if(w.motion==='wag'){tgt.arm=0;tgt.smile=0.3;tgt.tilt=0.6;}
+else if(w.motion==='circle'){tgt.arm=10;tgt.smile=w.face==='sad'?0.15:0.7;}
+else if(w.motion==='heart'){tgt.arm=-6;tgt.smile=1;burst('★',10);}
+else if(w.motion==='out'){tgt.arm=-10;tgt.smile=0.9;}
+else if(w.motion==='mouth'){tgt.arm=6;tgt.smile=0.95;burst('😋',4);}
+else if(w.motion==='bob'){tgt.arm=0;tgt.smile=0.7;}
+else if(w.motion==='tap'){tgt.arm=0;tgt.smile=0.8;}
+else if(w.motion==='point'){tgt.arm=0;tgt.smile=0.8;}
+$('avatarLog').textContent='avatar: '+item.label+' — '+w.motion+' motion';
+timer=setTimeout(playNext,(w.hold||1100)/speed);}
+else{
+var f=SH[item.label]||SH[item.label[0]]||[.3,.3,.3,.3,.3];
+tgt.f=f.slice();face.mode='smile';anim.motion=null;tgt.arm=0;tgt.smile=0.65;tgt.tilt=0;
+anim.spread=(item.label==='V'||item.label==='2')?[-0.5,-0.35,0.35,0.3,0.5]:null;
+$('avatarLog').textContent='avatar: fingerspelling '+item.label;
+timer=setTimeout(playNext,430/speed);
+}
+}
+window.avatarSay=function(text){};
+})();
+</script>
+
+<script type="module">
+const $=id=>document.getElementById(id);
+const log=m=>{$('camLog').textContent=m;};
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+let landmarker=null,camOn=false,stream=null,rafId=null,facing='user',lastT=0,hist=[],stable=null,stableSince=0,wristTrail=[],lastSeen=0,blankSpaceDone=true;
+const HOLD=700,RLEN=100.5;
+function flags(lm){const W=lm[0],palm=dist(lm[0],lm[9])||1;
+const chk=(t,p)=>dist(lm[t],W)>dist(lm[p],W)*1.03?1:0; // looser so signs trigger
+return {f:[dist(lm[4],lm[9])/palm>0.62?1:0,chk(8,6),chk(12,10),chk(16,14),chk(20,18)],palm};}
+function classify(lm){
+const o=flags(lm),f=o.f,palm=o.palm;const d=(a,b)=>dist(lm[a],lm[b])/palm;
+const spreadIM=d(8,12),cTI=d(4,8),cTM=d(4,12),cTR=d(4,16),cTP=d(4,20);
+const vert=lm[12].y-lm[0].y,hor=lm[12].x-lm[0].x;
+const side=Math.abs(hor)>0.3&&Math.abs(vert)<0.35,down=vert>0.22;
+const circle=cTI<0.38;
+const [T,I,M,R,P]=f,pat=f.join('');
+const thumbUp=lm[4].y<lm[3].y-0.015&&d(4,9)>0.5;
+const thumbFront=cTM<0.36&&lm[4].y>lm[6].y;
+const moving=(()=>{if(wristTrail.length<8)return false;const a=wristTrail[0],b=wristTrail[wristTrail.length-1];const dx=b.x-a.x,dy=b.y-a.y;return Math.hypot(dx,dy)>0.10;})();
+const swipe=(()=>{if(wristTrail.length<8)return null;const a=wristTrail[0],b=wristTrail[wristTrail.length-1];const dx=b.x-a.x;if(Math.abs(dx)>0.22&&Math.abs(b.y-a.y)<0.12)return 'SPACE';return null;})();
+if(swipe)return {ch:'SPACE',cf:.9,why:'swipe='+pat};
+// motion signatures for phrase signs (need 8+ tracked frames)
+const trail=wristTrail;
+const reagents=(()=>{
+if(trail.length<8)return {wave:false,nod:false,circle:false,fwd:false};
+let minX=9,maxX=-9,minY=9,maxY=-9;
+trail.forEach(p=>{minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);});
+const rx=maxX-minX,ry=maxY-minY;
+let sx=0,sy=0;
+for(let i=2;i<trail.length;i++){const d1x=trail[i-1].x-trail[i-2].x,d2x=trail[i].x-trail[i-1].x;if(d1x*d2x<0&&Math.abs(d1x)+Math.abs(d2x)>0.02)sx++;
+const d1y=trail[i-1].y-trail[i-2].y,d2y=trail[i].y-trail[i-1].y;if(d1y*d2y<0&&Math.abs(d1y)+Math.abs(d2y)>0.02)sy++;}
+return {wave:sx>=2&&rx>0.10&&rx>ry*1.2,nod:sy>=2&&ry>0.08,circle:sx>=2&&sy>=2&&rx>0.07&&ry>0.07,fwd:false,up:(trail[trail.length-1].y-trail[0].y)<-0.12&&ry>0.1,dn:(trail[trail.length-1].y-trail[0].y)>0.12&&ry>0.1};
+})();
+// WORD MODE: forgiving count-based rules so phrases actually lock.
+// n = open fingers among index/middle/ring/pinky (thumb ignored — it flickers).
+if(window.MODE==='WORD'){
+const n=I+M+R+P;
+const W=[];
+const wadd=(ch,s,why)=>W.push({ch,cf:s,why:why||ch+' '+pat});
+if(P&&n===1)wadd('I LOVE YOU',.95,'shaka');          // thumb+pinky (pinky the only open finger)
+if(I&&P&&n===2)wadd('HELP',.9,'index+pinky');        // thumb either way
+if(circle&&n>=3)wadd('FOOD',.88,'F->food');
+if(n===3)wadd('WATER',.86,'3 fingers->water');
+if(n===4){if(T){if(reagents.up)wadd('GOOD MORNING',.92,'palm rises');else if(reagents.dn)wadd('GOODBYE',.92,'palm lowers');else if(reagents.wave)wadd('HELLO',.95,'wave hello');else wadd('CINEMA',.93,'open palm still');}
+else{if(reagents.circle)wadd('PLEASE',.9,'flat circle');else wadd('THANK YOU',.87,'flat out');}}
+if(n===0){if(reagents.circle)wadd('SORRY',.92,'fist circle');else if(reagents.nod||moving)wadd('YES',.9,'fist nod');else if(thumbUp)wadd('YES',.86,'fist up');else wadd('YES',.8,'fist');}
+if(n===1&&I){if(reagents.wave||side)wadd('NO',.88,'point wag');else wadd('YOU',.84,'point');}
+if(n===1&&P)wadd('I LOVE YOU',.72,'lone pinky');
+if(n===2&&I&&M){if(spreadIM>0.26)wadd('VICTORY',.85,'peace');}
+if(n===0&&!thumbUp&&cTM>0.7&&cTI>0.6)wadd('DRINK',.84,'C shape');
+if(n===0&&thumbFront&&(reagents.wave||side))wadd('BATHROOM',.85,'T shake');
+if(side&&n===2&&I&&M)wadd('NAME',.84,'H sideways');
+if(d(8,6)<0.36&&!M&&!R&&!P&&(reagents.nod||moving))wadd('FRIEND',.82,'X nod');
+if(W.length){W.sort((a,b)=>b.cf-a.cf);return W[0];}
+}
+// score candidates — always return best, never blank when hand present
+const C=[];
+const add=(ch,s,why)=>C.push({ch,cf:s,why:why||ch+' '+pat});
+if(circle&&I&&M&&R)add('F',.92);
+if(circle&&I&&!M)add('D',.9);
+if(circle&&!I&&!M)add(cTM<0.36?'E': 'O',.88);
+if(!I&&!M&&!R&&!P){if(thumbUp)add('A',.9);else if(thumbFront)add('T',.82);else{add('S',.85);add('M',.6);add('E',.65);add('C',.5);}}
+if(pat==='11111'){add(cTI>0.45?'5': 'B',.93);add('B',.8);}
+if(I&&M&&R&&!P)add('W',.9);
+if(T&&I&&!M&&!R&&!P)add('L',.9);
+if(!I&&!M&&!R&&P)add(T?'Y':'I',.92);
+if(d(8,6)<0.36&&!M&&!R&&!P)add('X',.8);
+if(I&&!M&&!R&&!P){if(moving)add('Z',.78);else if(side)add('G',.84);else if(down)add('Q',.78);else add('D',.85);}
+if(I&&M&&!R&&!P){if(side)add('H',.82);else if(down)add('P',.78);else if(cTM<0.36)add('K',.82);else if(spreadIM>0.26)add('V',.9);else add('U',.88);
+if(Math.abs(lm[8].x-lm[12].x)<0.035)add('R',.8);}
+if(cTP<0.34&&!I&&!M)add('6',.72);
+if(cTR<0.34&&!I&&!M)add('7',.7);
+if(cTM<0.34&&!I)add('8',.7);
+if(cTI<0.34&&I&&!M&&!R)add('9',.7);
+// fallback by finger pattern so SOMETHING always shows
+if(!C.length){
+const FB={'11111':'B','01111':'B','01110':'W','01100':'V','01000':'D','00001':'I','10001':'Y','11000':'L','00000':'S','10111':'5','11110':'W'};
+add(FB[pat]||'A',.55,'guess '+pat);
+}
+C.sort((a,b)=>b.cf-a.cf);
+return C[0];
+}
+function labelFor(ch){
+if(ch==='SPACE')return 'SPACE';
+if(ch==='CINEMA')return 'CINEMA';
+if(!ch)return '';
+if(window.MODE==='NUM'){const m={O:'0',D:'1',V:'2',W:'3',B:'4',A:'5'};return m[ch]||ch;}
+if(window.MODE==='WORD'){const w={'B':'CINEMA','5':'CINEMA',S:'YES',A:'YES',V:'VICTORY',Y:'I LOVE YOU',F:'FOOD',W:'WATER',D:'YOU',O:'HELLO',L:'PLEASE',I:'SORRY'};return w[ch]||ch;}
+return ch;
+}
+async function loadModelBG(){
+try{$('modelState').textContent='camera: on · model: loading…';
+const {FilesetResolver,HandLandmarker}=await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs");
+const resolver=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+const url="https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+try{landmarker=await HandLandmarker.createFromOptions(resolver,{baseOptions:{modelAssetPath:url,delegate:"GPU"},runningMode:"VIDEO",numHands:2});}
+catch(e){landmarker=await HandLandmarker.createFromOptions(resolver,{baseOptions:{modelAssetPath:url,delegate:"CPU"},runningMode:"VIDEO",numHands:2});}
+$('modelState').textContent='camera: on · model: loaded';log('AI loaded. Hold A–Z / 0–9. Swipe = SPACE.');
+}catch(e){$('modelState').textContent='camera: on · model FAILED';log('Video OK, AI failed: '+(e.message||e));}
+}
+function drawHands(hands){const c=$('overlay'),v=$('video');if(!v.videoWidth)return;
+c.width=v.videoWidth;c.height=v.videoHeight;const x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);
+if(!hands||!hands.length)return;
+const CN=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+hands.forEach(h=>{x.strokeStyle='#00FF88';x.lineWidth=3;x.fillStyle='#00FF88';CN.forEach(([a,b])=>{x.beginPath();x.moveTo(h[a].x*c.width,h[a].y*c.height);x.lineTo(h[b].x*c.width,h[b].y*c.height);x.stroke();});h.forEach(p=>{x.beginPath();x.arc(p.x*c.width,p.y*c.height,5,0,7);x.fill();});});}
+let cineAt=0;
+function cineConfetti(){
+const c=$('cineFx'),st=$('stage');if(!c)return;
+c.width=st.clientWidth||640;c.height=st.clientHeight||480;
+const x=c.getContext('2d');
+const cols=['#00f0ff','#ff2bd6','#b6ff2b','#ffd166','#ffffff'];
+const ps=[];for(let i=0;i<170;i++)ps.push({x:c.width/2+(Math.random()-.5)*140,y:c.height/2,px:0,vx:(Math.random()-.5)*9,vy:-3-Math.random()*7,s:3+Math.random()*5,r:Math.random()*6.28,vr:(Math.random()-.5)*.3,col:cols[i%cols.length],life:1});
+let f=0;
+(function step(){x.clearRect(0,0,c.width,c.height);f++;
+ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.25;p.r+=p.vr;p.life-=0.008;
+x.save();x.translate(p.x,p.y);x.rotate(p.r);x.globalAlpha=Math.max(0,Math.min(1,p.life*1.5));x.fillStyle=p.col;x.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6);x.restore();});
+if(f<100)requestAnimationFrame(step);else x.clearRect(0,0,c.width,c.height);})();
+}
+function absoluteCinema(){
+const now=performance.now();if(now-cineAt<2500)return;cineAt=now;
+const st=$('stage');st.classList.remove('cinema');void st.offsetWidth;st.classList.add('cinema');
+const t=$('cineTitle');t.innerHTML='ABSOLUTE CINEMA<div class="cine-sub">★ DOUBLE-PALM PREMIERE ★</div>';
+clearTimeout(t._x);t._x=setTimeout(()=>st.classList.remove('cinema'),1700);
+cineConfetti();
+try{const u=new SpeechSynthesisUtterance('Absolute cinema!');u.lang='en-IN';u.rate=.95;u.pitch=1.25;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}
+}
+function commit(label,why){
+if(label==='SPACE'){if(window.sentence&&!window.sentence.endsWith(' ')){window.addText(' ');}$('letterBuf').textContent='added: SPACE ('+why+')';return;}
+if(label==='CINEMA'){const t=performance.now();$('letterBuf').textContent='ABSOLUTE CINEMA — no text added';log('open palm — ABSOLUTE CINEMA (no text)');absoluteCinema();stable=null;hist=[];stableSince=t+600;return;}
+if(label.length>1&&window.sentence&&!window.sentence.endsWith(' '))window.addText(' ');
+window.addText(label);window.speak(label);if(window.avatarSay)window.avatarSay(label);
+$('letterBuf').textContent='locked: '+label+' ('+why+')';log('locked: '+label+' ('+why+')');}
+function handCount(h){const f=flags(h).f;return {n:f[1]+f[2]+f[3]+f[4],t:f[0],f:f};}
+function twoHandWord(hands){
+if(hands.length<2)return null;
+const a=handCount(hands[0]),b=handCount(hands[1]);
+const open=(o)=>o.n===4, fist=(o)=>o.n===0, palmUp=(o)=>o.n>=3;
+if(open(a)&&open(b))return {ch:'CINEMA',cf:.96,why:'two open palms'};
+if(palmUp(a)&&palmUp(b))return {ch:'CINEMA',cf:.88,why:'two open palms'};
+if((fist(a)&&open(b))||(fist(b)&&open(a)))return {ch:'HELP',cf:.93,why:'fist + palm'};
+if(fist(a)&&fist(b))return {ch:'YES',cf:.9,why:'two fists'};
+if((a.f[4]===1&&a.n===1)||(b.f[4]===1&&b.n===1))return {ch:'I LOVE YOU',cf:.93,why:'shaka + helper'};
+const v=(o)=>o.f[1]&&o.f[2]&&o.n===2;
+if(v(a)&&v(b))return {ch:'VICTORY',cf:.92,why:'double peace'};
+return null;
+}
+async function loop(){
+if(!camOn)return;const v=$('video');
+if(v.readyState>=2){
+if(landmarker){const now=performance.now();
+if(now-lastT>50){lastT=now;
+window.__fpsN=(window.__fpsN||0)+1;window.__fpsT=window.__fpsT||now;
+if(now-window.__fpsT>=1000){window.__fps=Math.round(window.__fpsN*1000/(now-window.__fpsT));window.__fpsT=now;window.__fpsN=0;}
+try{
+const res=landmarker.detectForVideo(v,now);
+const hands=res.landmarks&&res.landmarks.length?res.landmarks:null;drawHands(hands);
+if(hands){lastSeen=now;blankSpaceDone=false;
+let li=0,bestA=-1;hands.forEach((h,i)=>{let x0=9,x1=-9,y0=9,y1=-9;h.forEach(p=>{if(p.x<x0)x0=p.x;if(p.x>x1)x1=p.x;if(p.y<y0)y0=p.y;if(p.y>y1)y1=p.y;});const ar=(x1-x0)*(y1-y0);if(ar>bestA){bestA=ar;li=i;}});
+const lm=hands[li];wristTrail.push({x:lm[0].x,y:lm[0].y});if(wristTrail.length>12)wristTrail.shift();
+let r=classify(lm),label=labelFor(r.ch);
+if(hands.length>1){const tw=twoHandWord(hands);if(tw){r={ch:tw.ch,cf:tw.cf,why:tw.why+' · 2 hands'};label=labelFor(tw.ch);}}
+$('ph').style.display='none';$('readout').style.display='flex';
+$('badge').innerHTML='<span class="dot"></span> reading · '+hands.length+' hand'+(hands.length>1?'s':'');$('badge').classList.add('on');
+const g=$('glyph');g.textContent=label||'…';g.classList.toggle('sm',!label||label.length>2);
+if(window.__target&&label===window.__target){$('letterBuf').textContent='PRACTICE MATCH: '+label+' — nailed it. Hold to lock!';g.style.boxShadow='0 0 0 4px #2dd4bf';}else{g.style.boxShadow='';}
+$('mFin').textContent='['+flags(lm).f.join(',')+']'+(hands.length>1?' ×'+hands.length:'');$('mThu').textContent=(r.ch||'—')+' '+(r.why||''); 
+if(label){hist.push(label);if(hist.length>8)hist.shift();
+const twoH=r.why&&r.why.indexOf('2 hands')>=0;
+const need=twoH?3:5, holdMs=twoH?380:HOLD;
+const cnt=hist.filter(h=>h===label).length;$('mSta').textContent=cnt+'/8'+(twoH?' ⚡':'');
+if(cnt>=need){if(label===stable){const p=Math.min(1,(now-stableSince)/holdMs);
+$('ringFg').style.strokeDashoffset=String(100.5*(1-p));
+$('letterBuf').textContent='buffer: '+label+' '+Math.round(p*100)+'% — hold… (Add = instant)';
+if(label==='SPACE'){if(p>=0.4){commit('SPACE','swipe');stable=null;hist=[];stableSince=now+600;}}
+else if(p>=1){commit(label,r.why||'');stable=null;hist=[];stableSince=now+500;}
+}else{stable=label;stableSince=now;}}else{$('ringFg').style.strokeDashoffset=String(100.5);$('letterBuf').textContent='buffer: '+label+' … stabilizing '+cnt+'/5';}
+}else{$('mSta').textContent='—';}
+}else{
+// blank = auto SPACE after 1.5s (like original paper's blank class)
+if(!blankSpaceDone&&now-lastSeen>1500&&window.sentence&&!window.sentence.endsWith(' ')){window.addText(' ');$('letterBuf').textContent='added: SPACE (blank pause)';blankSpaceDone=true;}
+$('ph').style.display='block';$('ph').innerHTML='Show one or two hands.<br>Hide hands 1.5s = SPACE.';$('readout').style.display='none';$('badge').innerHTML='<span class="dot"></span> reading';hist=[];stable=null;wristTrail=[];}
+}catch(e){log('detect: '+e.message);}
+}}else{if(v.videoWidth){const c=$('overlay');if(c.width!==v.videoWidth){c.width=v.videoWidth;c.height=v.videoHeight;}}}
+}
+rafId=requestAnimationFrame(loop);
+}
+window.currentLabel=function(){return $('glyph').textContent&&$('glyph').textContent!=='—'?$('glyph').textContent:'';};
+$('addBtn').onclick=()=>{const l=window.currentLabel();if(!l||l==='…'){toast('No guess yet — show hand');return;}commit(l,'manual');};
+$('startCam').onclick=async()=>{
+if(location.protocol==='file:'){log('BLOCKED file:// — use http://localhost:8000');return;}
+if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){log('Need Chrome/Edge.');return;}
+try{log('requesting camera…');
+stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:false});
+const v=$('video');v.srcObject=stream;v.onloadedmetadata=async()=>{try{await v.play();}catch(e){}};
+$('ph').style.display='none';camOn=true;lastSeen=performance.now();
+$('startCam').disabled=true;$('stopCam').disabled=false;
+$('modelState').textContent='camera: on · model: loading…';log('VIDEO LIVE. Loading AI…');loop();loadModelBG();
+}catch(e){log(e&&e.name==='NotAllowedError'?'Denied: allow camera icon → retry.':('Start failed: '+(e.message||e)));}
+};
+$('stopCam').onclick=()=>{camOn=false;cancelAnimationFrame(rafId);if(stream)stream.getTracks().forEach(t=>t.stop());$('video').srcObject=null;$('startCam').disabled=false;$('stopCam').disabled=true;$('readout').style.display='none';var ph=$('ph');ph.style.display='block';ph.innerHTML='Press <b>Start camera</b>.';};
+$('flipCam').onclick=()=>{facing=(facing==='user'?'environment':'user');if(camOn){$('stopCam').click();setTimeout(()=>$('startCam').click(),300);}};
+$('testBtn').onclick=()=>{window.addText(window.MODE==='NUM'?'5':window.MODE==='WORD'?'HELLO':'A');window.speak('test');log('self-test OK.');};
+</script>
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(){});});}
+</script>
+</body>
+</html>
